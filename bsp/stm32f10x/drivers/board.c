@@ -20,6 +20,7 @@
 #include "stm32f10x_fsmc.h"
 #include "board.h"
 #include "usart.h"
+#include "RTC.h"
 
 /**
  * @addtogroup STM32
@@ -173,10 +174,9 @@ void rt_hw_board_init(void)
 {
     /* NVIC Configuration */
     NVIC_Configuration();
-
     /* Configure the SysTick */
     SysTick_Config( SystemCoreClock / RT_TICK_PER_SECOND );
-
+	
 #if STM32_EXT_SRAM
     EXT_SRAM_Configuration();
 #endif

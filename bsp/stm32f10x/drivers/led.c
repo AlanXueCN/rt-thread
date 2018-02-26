@@ -26,13 +26,13 @@
 
 #else
 
-#define led1_rcc                    RCC_APB2Periph_GPIOE
-#define led1_gpio                   GPIOE
-#define led1_pin                    (GPIO_Pin_2)
+#define led1_rcc                    RCC_APB2Periph_GPIOD
+#define led1_gpio                   GPIOD
+#define led1_pin                    (GPIO_Pin_3)
 
-#define led2_rcc                    RCC_APB2Periph_GPIOE
-#define led2_gpio                   GPIOE
-#define led2_pin                    (GPIO_Pin_3)
+#define led2_rcc                    RCC_APB2Periph_GPIOD
+#define led2_gpio                   GPIOD
+#define led2_pin                    (GPIO_Pin_6)
 
 #endif // led define #ifdef STM32_SIMULATOR
 

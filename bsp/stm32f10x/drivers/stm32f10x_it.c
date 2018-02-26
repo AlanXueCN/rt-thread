@@ -26,6 +26,10 @@
 #include <board.h>
 #include <rtthread.h>
 #include "bxcan.h"
+#include "sdio_sdcard.h"
+#include "RTC.h"
+
+vu32 TimeDisplay = 0;
 
 /** @addtogroup Template_Project
   * @{
@@ -106,6 +110,43 @@ void SVC_Handler(void)
   */
 void DebugMon_Handler(void)
 {
+}
+
+void SDIO_IRQHandler(void)
+{
+  /* Process All SDIO Interrupt Sources */
+  SD_ProcessIRQSrc();
+}
+
+void RTC_IRQHandler(void)
+{
+  if(RTC_GetITStatus(RTC_IT_SEC) != RESET)				 //读取秒中断状态
+  {
+    RTC_ClearITPendingBit(RTC_IT_SEC);					 //清除秒中断标志
+//    GPIO_WriteBit(GPIOB, GPIO_Pin_5, (BitAction)(1-GPIO_ReadOutputDataBit(GPIOB, GPIO_Pin_5)));   //LED1闪烁	  
+
+    /* 时钟更新标志置位 */
+    TimeDisplay = 1;	  
+    RTC_WaitForLastTask();							     //等待上一次对RTC寄存器的写操作是否已经完成    
+    if(RTC_GetCounter() == 0x00015180)				     //当前时间是23:59:59时 复位为0:0:0 	    
+    {
+	  RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
+	  PWR->CR|=1<<8;                  					 //取消备份区写保护
+	  RTC_EnterConfigMode();						     //允许配置 	  				
+	  RTC_WaitForLastTask();                             //等待上一次对RTC寄存器的写操作是否已经完成 
+      RTC_SetCounter(0x0);								 //写入复位值
+      RTC_WaitForLastTask();							 //等待上一次对RTC寄存器的写操作是否已经完成    
+    }
+	else if(RTC_GetCounter() > 0x00015180)				 //当再次上电后计数值超过0x00015180， 复位为当前值取模0x00015180。	    
+    {
+	  RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
+	  PWR->CR|=1<<8;                                     //取消备份区写保护
+	  RTC_EnterConfigMode();			                 //允许配置 
+	  RTC_WaitForLastTask();                             //等待上一次对RTC寄存器的写操作是否已经完成    
+      RTC_SetCounter(RTC_GetCounter()%0x00015180);		 //写入复位值
+      RTC_WaitForLastTask();							 //等待上一次对RTC寄存器的写操作是否已经完成    
+    }
+  }
 }
 
 //void SysTick_Handler(void)
